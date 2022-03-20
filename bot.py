@@ -80,7 +80,7 @@ def inline_query_handler(inline_query: types.InlineQuery) -> None:
             if command.name.lower() == "page":
                 try:
                     value = abs(int(command.value))
-                    page = value if value > 1 else 1
+                    page = max(value, 1)
                 except ValueError:
                     continue
     try:
@@ -95,18 +95,14 @@ def inline_query_handler(inline_query: types.InlineQuery) -> None:
     else:
         # for every item in search result that has image attribute, add it to results
         if search_result.items:
-            for item in search_result.items:
-                if item.image:
-                    results.append(
-                        types.InlineQueryResultPhoto(
+            results.extend(types.InlineQueryResultPhoto(
                             id=str(uuid4()),
                             photo_url=item.link,
                             thumb_url=item.image.thumbnailLink,
                             photo_width=item.image.width,
                             photo_height=item.image.height,
                             title=item.title
-                        )
-                    )
+                        ) for item in search_result.items if item.image)
         if search_result.spelling:
             results.append(
                 types.InlineQueryResultArticle(
